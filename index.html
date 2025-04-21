@@ -1,0 +1,183 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ucup Store - Daftar & Order</title>
+  <style>
+    body {
+      background: url('qris.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #0f0;
+      font-family: sans-serif;
+      margin: 0;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: -1;
+    }
+    h1, h2 {
+      text-align: center;
+      text-shadow: 0 0 15px #0f0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 25px;
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 20px #0f0;
+    }
+    input, select, textarea, button {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      border: none;
+      background: #111;
+      color: #0f0;
+      font-size: 14px;
+      box-shadow: 0 0 6px #0f0;
+    }
+    button {
+      background: #0f0;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #000;
+      color: #0f0;
+      box-shadow: 0 0 12px #0f0;
+    }
+    #totalHarga {
+      font-weight: bold;
+      font-size: 16px;
+      color: #0f0;
+      text-align: center;
+      margin-top: -10px;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Ucup Store</h1>
+
+<div class="container" id="daftarSection">
+  <h2>Daftar Customer</h2>
+  <form id="registerForm">
+    <input type="text" id="name" placeholder="Nama Lengkap" required />
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <button type="submit">Daftar</button>
+  </form>
+</div>
+
+<div class="container hidden" id="orderSection">
+  <h2>Form Order</h2>
+  <form id="orderForm">
+    <input type="text" id="namaOrder" readonly />
+    <input type="email" id="emailOrder" readonly />
+    <input type="text" id="idml" placeholder="ID ML" required />
+    <input type="text" id="server" placeholder="Server" required />
+    <select id="rank" required>
+      <option value="">Pilih Rank</option>
+      <option value="GM">GM</option>
+      <option value="Epic">Epic</option>
+      <option value="Legend">Legend</option>
+      <option value="Mythic">Mythic</option>
+      <option value="Honor">Honor</option>
+      <option value="Glory">Glory</option>
+      <option value="Immortal">Immortal</option>
+    </select>
+    <input type="number" id="bintang" placeholder="Jumlah Bintang" required />
+    <div id="totalHarga">Total Harga: Rp 0</div>
+    <input type="text" id="hero" placeholder="Hero Favorit" />
+    <select id="metode" required>
+      <option value="">Pilih Metode Pembayaran</option>
+      <option value="Dana">Dana (087742270241)</option>
+      <option value="ShopeePay">ShopeePay (083890707632)</option>
+      <option value="QRIS">QRIS (Lihat gambar di background)</option>
+    </select>
+    <textarea id="catatan" placeholder="Catatan Tambahan (opsional)"></textarea>
+    <button type="submit">Kirim Order ke WhatsApp</button>
+  </form>
+</div>
+
+<script>
+  const hargaPerRank = {
+    GM: 4000,
+    Epic: 5000,
+    Legend: 6000,
+    Mythic: 8000,
+    Honor: 9000,
+    Glory: 12000,
+    Immortal: 20000
+  };
+
+  const rankSelect = document.getElementById('rank');
+  const bintangInput = document.getElementById('bintang');
+  const hargaDisplay = document.getElementById('totalHarga');
+
+  function updateHarga() {
+    const rank = rankSelect.value;
+    const bintang = parseInt(bintangInput.value) || 0;
+    const total = hargaPerRank[rank] ? hargaPerRank[rank] * bintang : 0;
+    hargaDisplay.textContent = "Total Harga: Rp " + total.toLocaleString("id-ID");
+  }
+
+  rankSelect.addEventListener('change', updateHarga);
+  bintangInput.addEventListener('input', updateHarga);
+
+  document.getElementById("registerForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const user = {
+      name: document.getElementById("name").value,
+      email: document.getElementById("email").value,
+    };
+    localStorage.setItem("ucupstore_user", JSON.stringify(user));
+    alert("Pendaftaran berhasil!");
+    document.getElementById("daftarSection").classList.add("hidden");
+    document.getElementById("orderSection").classList.remove("hidden");
+    document.getElementById("namaOrder").value = user.name;
+    document.getElementById("emailOrder").value = user.email;
+  });
+
+  window.addEventListener("DOMContentLoaded", () => {
+    const data = localStorage.getItem("ucupstore_user");
+    if (data) {
+      const user = JSON.parse(data);
+      document.getElementById("daftarSection").classList.add("hidden");
+      document.getElementById("orderSection").classList.remove("hidden");
+      document.getElementById("namaOrder").value = user.name;
+      document.getElementById("emailOrder").value = user.email;
+    }
+  });
+
+  document.getElementById("orderForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const nama = document.getElementById("namaOrder").value;
+    const email = document.getElementById("emailOrder").value;
+    const idml = document.getElementById("idml").value;
+    const server = document.getElementById("server").value;
+    const rank = document.getElementById("rank").value;
+    const bintang = document.getElementById("bintang").value;
+    const hero = document.getElementById("hero").value;
+    const metode = document.getElementById("metode").value;
+    const catatan = document.getElementById("catatan").value;
+    const harga = hargaPerRank[rank] * parseInt(bintang || 0);
+    const msg = `Halo Admin, saya ingin order joki ML:%0A%0ANama: ${nama}%0AEmail: ${email}%0AID ML: ${idml} (${server})%0ARank: ${rank}%0ABintang: ${bintang}%0ATotal: Rp ${harga.toLocaleString("id-ID")}%0AHero: ${hero}%0AMetode: ${metode}%0ACatatan: ${catatan}`;
+    window.open(`https://wa.me/6287726100623?text=${msg}`, '_blank');
+  });
+</script>
+
+</body>
+</html>
